@@ -1,24 +1,43 @@
-import os
+import os, sys
 import random
 from pyfiglet import Figlet
 import subprocess
 
-def playRandomVideo():
-    videos = list()
-    for path in os.listdir("videos"):
-        if path.startswith(".DS_Store"):
+main_dir = "/Users/itpstudent/Google Drive/TNO" 
+fflay = "./ffplay"
+
+videos = list()
+
+# for dev on my mac, use call with argument: $ python tnovideoscript.py dev
+try:
+    if sys.argv[1] == "dev":
+        main_dir = "./videos"
+        ffplay = "ffplay"
+except: IndexError
+
+def rechargeVideos():
+    global videos
+    for path in os.listdir(main_dir):
+        if path.startswith(".DS_Store") or path.endswith(".txt"):
             continue
         videos.append(path)
-    ran_path = random.choice(videos) 
-    print "\n"*10
-    print ran_path
-    print videos
-    print "\n"*10
+    random.shuffle(videos)
 
+def playRandomVideo():
+    global videos
+    if len(videos) == 0:
+        rechargeVideos()
+
+    ran_path = videos[-1]
+    videos = videos[:-1]
+
+    text = ""
+    for line in open(os.path.join(main_dir, "banner.txt")):
+	line = line.strip()
+	text += "\n" + line	
     f = Figlet(font='banner', width=1000)
-    print f.renderText('add to poopoo@gmail.com')
-    subprocess.call(["ffplay", "-autoexit", os.path.join("videos", ran_path)])
-    print "done"
+    print f.renderText(text)
+    subprocess.call([ffplay, "-autoexit", os.path.join(main_dir, ran_path)])
 
 while True:
     playRandomVideo()
